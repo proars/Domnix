@@ -129,13 +129,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=YOUR_USERNAME/domnix&type=Date)](https://star-history.com/#YOUR_USERNAME/domnix&Date)
-
-## 🔗 Related Projects
-
-- [PyWhois](https://github.com/richardpenman/pywhois) - Python WHOIS module
-- [python-whois](https://github.com/DannyCork/python-whois) - Another WHOIS implementation
-- [domain-tools](https://github.com/topics/domain-tools) - More domain-related tools
+[![Star History Chart](https://api.star-history.com/svg?repos=proars/domnix&type=Date)](https://star-history.com/#proars/domnix&Date)
 
 ## 🙏 Acknowledgments
 
