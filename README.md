@@ -138,4 +138,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - All contributors who help improve this tool
 
 ---
-Made with ❤️ by | [Website](https://arstech.net.com) 
+Made with ❤️ by | [Website](https://arstech.net) 
