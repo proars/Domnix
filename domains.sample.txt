@@ -1,0 +1,7 @@
+# Example domain list (do NOT commit your real list)
+# Copy to domains.txt locally and edit
+example
+mybrand
+project-x
+example.org
+example.net

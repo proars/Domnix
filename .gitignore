@@ -1,1 +1,21 @@
+# Outputs
 /results.csv
+*.csv
+*.json
+*.log
+*.tmp
+
+# Local data inputs (may contain sensitive domain lists)
+/domains.txt
+domains.txt
+
+# Python cache and virtual envs
+__pycache__/
+*.py[cod]
+.venv/
+env/
+venv/
+
+# Editor/project files
+.vscode/
+.idea/
