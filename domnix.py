@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Domnix - Fast Bulk Domain Availability Checker
+Multi-threaded WHOIS CLI for checking domain registration status.
+"""
+
 import argparse
 import concurrent.futures as cf
 import csv
@@ -10,19 +15,19 @@ import socket
 import sys
 import time
 import shutil
-from typing import Tuple, Optional, List
+import threading
+from typing import Optional, List
 
-
-
+# Global flag for stopping process
+STOP_REQUESTED = False
 
 # Phrases that indicate domain is available/not registered
 AVAILABLE_MARKERS = [
     "no match", "not found", "no entries found", "no data found",
     "status: available", "status: free", "domain not found", "no object found",
-    "no such domain", "not registered", "object does not exist"
+    "no such domain", "not registered", "object does not exist",
+    "no records", "no data available"
 ]
-# Add non-English variants that also indicate availability (no Cyrillic)
-AVAILABLE_MARKERS += ["no records", "no data available"]
 
 # Simple cache to avoid querying IANA too often
 WHOIS_SERVER_CACHE = {}
@@ -234,6 +239,41 @@ def check_one(
         return {"domain": domain, "status": "error", "note": last_err, "dns": dns_info, "http": http_info}
     return {"domain": domain, "status": "unknown", "note": f"whois: {server}", "dns": dns_info, "http": http_info}
 
+def keyboard_listener():
+    """Listen for 'q' key press to stop the process."""
+    global STOP_REQUESTED
+    try:
+        while not STOP_REQUESTED:
+            if sys.platform == "win32":
+                import msvcrt
+                if msvcrt.kbhit():
+                    key = msvcrt.getch().decode('utf-8', errors='ignore').lower()
+                    if key == 'q':
+                        STOP_REQUESTED = True
+                        print("\n\n" + color("⚠ Stop requested! Finishing current checks and saving...", "33"))
+                        break
+            else:
+                import select
+                if select.select([sys.stdin], [], [], 0.1)[0]:
+                    key = sys.stdin.read(1).lower()
+                    if key == 'q':
+                        STOP_REQUESTED = True
+                        print("\n\n" + color("⚠ Stop requested! Finishing current checks and saving...", "33"))
+                        break
+            time.sleep(0.1)
+    except Exception:
+        pass  # Silently fail if keyboard input not available
+
+def save_remaining_domains(domains: List[str], output_path: str):
+    """Save remaining unchecked domains to file."""
+    try:
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(domains))
+        return True
+    except Exception as e:
+        print(f"Error saving domains: {e}", file=sys.stderr)
+        return False
+
 def load_domains(path: str) -> List[str]:
     domains = []
     with open(path, "r", encoding="utf-8") as f:
@@ -247,8 +287,17 @@ def load_domains(path: str) -> List[str]:
             domains = [line.strip() for line in content.splitlines()]
     
     # Filter out empty lines and comments
-    domains = [d for d in domains if d and not d.startswith("#")]
-    return domains
+    domains = [d for d in domains if d and not d.startswith("#") and not d.startswith("=")]
+    
+    # Remove numbering like "1. domain.com" or "  123. domain.com"
+    cleaned_domains = []
+    for d in domains:
+        # Remove leading numbers and dots (e.g., "123. domain.com" -> "domain.com")
+        d = re.sub(r'^\s*\d+\.\s*', '', d).strip()
+        if d:
+            cleaned_domains.append(d)
+    
+    return cleaned_domains
 
 def main():
     parser = argparse.ArgumentParser(description="Check domain registration status using WHOIS")
@@ -264,21 +313,97 @@ def main():
     parser.add_argument("--whois-server", help="Override WHOIS server (applies to all domains in this run)")
     args = parser.parse_args()
 
-    # Allow running without arguments by auto-using domains.txt when present
-    input_path = args.input or "domains.txt"
-    if not args.input and not os.path.exists(input_path):
-        parser.print_usage(sys.stderr)
-        print("\nProvide a domain list file or create domains.txt (comma-separated or one per line).", file=sys.stderr)
-        sys.exit(1)
-
-    domains = load_domains(input_path)
+    # Interactive mode when no input provided
+    input_path = args.input
+    domains = []
+    
+    if not input_path:
+        # Check if domains.txt exists
+        if os.path.exists("domains.txt"):
+            print(color("📋 Found domains.txt in current directory", "36"))
+            response = input(color("Use this file? (Y/n): ", "33")).strip().lower()
+            if response in ["", "y", "yes"]:
+                input_path = "domains.txt"
+            else:
+                input_path = None
+        
+        # If no file selected, offer interactive input
+        if not input_path:
+            print(color("\n🔍 Domnix - Domain Availability Checker", "36;1"))
+            print(color("─" * 45, "90"))
+            print("\nChoose an option:")
+            print(color("  1)", "33"), "Enter domains manually (comma-separated)")
+            print(color("  2)", "33"), "Specify a file path")
+            print(color("  3)", "33"), "Exit")
+            
+            choice = input(color("\nYour choice (1-3): ", "33")).strip()
+            
+            if choice == "1":
+                print(color("\n💡 Tip:", "36"), "Enter domains separated by commas or spaces")
+                print(color("   Example:", "90"), "example.com, mysite.net, test.org")
+                domain_input = input(color("\nEnter domains: ", "33")).strip()
+                
+                if not domain_input:
+                    print(color("❌ No domains entered. Exiting.", "31"), file=sys.stderr)
+                    sys.exit(1)
+                
+                # Parse input (handle both comma and space separation)
+                if "," in domain_input:
+                    domains = [d.strip() for d in domain_input.split(",")]
+                else:
+                    domains = [d.strip() for d in domain_input.split()]
+                
+                domains = [d for d in domains if d]
+                
+                if not domains:
+                    print(color("❌ No valid domains found. Exiting.", "31"), file=sys.stderr)
+                    sys.exit(1)
+                    
+            elif choice == "2":
+                file_path = input(color("Enter file path: ", "33")).strip()
+                if not file_path or not os.path.exists(file_path):
+                    print(color(f"❌ File not found: {file_path}", "31"), file=sys.stderr)
+                    sys.exit(1)
+                input_path = file_path
+            else:
+                print(color("👋 Goodbye!", "36"))
+                sys.exit(0)
+    
+    # Load domains from file if path is set
+    if input_path:
+        try:
+            domains = load_domains(input_path)
+        except FileNotFoundError:
+            print(color(f"❌ File not found: {input_path}", "31"), file=sys.stderr)
+            sys.exit(1)
+        except Exception as e:
+            print(color(f"❌ Error reading file: {e}", "31"), file=sys.stderr)
+            sys.exit(1)
+    
     if not domains:
-        print("File is empty or contains no valid domains.", file=sys.stderr)
+        print(color("❌ No valid domains to check. Exiting.", "31"), file=sys.stderr)
         sys.exit(1)
+    
+    # Show what we're about to check
+    print(color(f"\n✓ Loaded {len(domains)} domain(s) to check", "32"))
 
     results = []
     # Get default TLD (default to "com" if not specified)
     default_tld = args.tld if args.tld else "com"
+    
+    total_domains = len(domains)
+    completed = 0
+    checked_domains = set()
+    
+    # Start keyboard listener thread
+    global STOP_REQUESTED
+    STOP_REQUESTED = False
+    listener_thread = threading.Thread(target=keyboard_listener, daemon=True)
+    listener_thread.start()
+    
+    print(f"Starting check for {total_domains} domains...")
+    print(color("Press 'q' at any time to stop and save remaining domains.", "36"))
+    print()
     
     with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
         futs = [
@@ -296,7 +421,49 @@ def main():
             for d in domains
         ]
         for fut in cf.as_completed(futs):
-            results.append(fut.result())
+            if STOP_REQUESTED:
+                # Cancel remaining futures
+                for f in futs:
+                    f.cancel()
+                break
+                
+            result = fut.result()
+            results.append(result)
+            checked_domains.add(result.get('domain', ''))
+            completed += 1
+            
+            # Show progress
+            percentage = (completed / total_domains) * 100
+            bar_length = 40
+            filled = int(bar_length * completed / total_domains)
+            bar = '█' * filled + '░' * (bar_length - filled)
+            
+            # Status counter for current batch
+            status_emoji = {
+                'free': '✓',
+                'registered': '✗',
+                'unknown': '?',
+                'error': '!',
+                'invalid': '⨯'
+            }
+            emoji = status_emoji.get(result.get('status', ''), '•')
+            
+            print(f"\r[{bar}] {percentage:5.1f}% ({completed}/{total_domains}) {emoji} {result.get('domain', '')[:40]:<40}", end='', flush=True)
+    
+    print("\n")  # New line after progress bar
+    
+    # Save remaining domains if stopped early
+    if STOP_REQUESTED:
+        remaining = [d for d in domains if d not in checked_domains]
+        if remaining and input_path:
+            if save_remaining_domains(remaining, input_path):
+                print(color(f"✓ Saved {len(remaining)} unchecked domains back to {input_path}", "32"))
+            else:
+                print(color(f"✗ Failed to save remaining domains", "31"), file=sys.stderr)
+        elif remaining and not input_path:
+            print(color(f"⚠ {len(remaining)} domains were not checked (manual entry mode)", "33"))
+        print(color(f"Stopped after checking {completed}/{total_domains} domains.", "33"))
+        print()
 
     # Preserve the original input order
     order = {d: i for i, d in enumerate(domains)}

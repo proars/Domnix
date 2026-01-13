@@ -12,10 +12,22 @@ domains.txt
 # Python cache and virtual envs
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
 .venv/
 env/
 venv/
+ENV/
 
 # Editor/project files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
