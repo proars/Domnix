@@ -465,9 +465,9 @@ def main():
         print(color(f"Stopped after checking {completed}/{total_domains} domains.", "33"))
         print()
 
-    # Preserve the original input order
-    order = {d: i for i, d in enumerate(domains)}
-    results.sort(key=lambda r: order.get(r["domain"], 10**9))
+    # Sort results: free domains first, then by domain name
+    status_priority = {"free": 0, "registered": 1, "unknown": 2, "error": 3, "invalid": 4}
+    results.sort(key=lambda r: (status_priority.get(r.get("status", "unknown"), 5), r.get("domain", "").lower()))
 
     # Always print to console first (table only)
     term_width = shutil.get_terminal_size((120, 40)).columns

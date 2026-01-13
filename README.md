@@ -163,6 +163,15 @@ Press 'q' at any time to stop and save remaining domains.
 | ! | `error` | Error occurred while checking |
 | ⨯ | `invalid` | Invalid domain name format |
 
+### 📋 Result Sorting
+
+Results are automatically sorted for easy scanning:
+
+1. **Free domains first** - All available domains at the top
+2. **By domain name** - Alphabetically within each status group
+
+**Sort order:** Free → Registered → Unknown → Error → Invalid
+
 ### 🛑 Stop Process Anytime
 
 **Press 'q' at any time during execution:**
@@ -198,7 +207,7 @@ Output saved: CSV -> results.csv
 
 ### 📈 Output Format
 
-**Console Output:**
+**Console Output (sorted - free domains first):**
 
 ```
 ✓ Loaded 500 domain(s) to check
@@ -208,9 +217,13 @@ Press 'q' at any time to stop and save remaining domains.
 [████████████████████████████████████████] 100.0% (500/500) ✓ lastdomain.com
 
 DOMAIN                            STATUS        NOTE                      DNS                       HTTP
+afreeme.com                       free          whois: whois.verisign...                          
+bestdomain.net                    free          whois: whois.verisign...                          
+creativeidea.io                   free          whois: whois.verisign...                          
 example.com                       registered    whois: whois.verisign...  A: 93.184.216.34         https 200
-mydomain.com                      free          whois: whois.verisign...                          
-test123.net                       free          whois: whois.verisign...                          
+facebook.net                      registered    whois: whois.verisign...                          
+test123.net                       registered    whois: whois.verisign...                          
+unknown.com                       unknown       whois: whois.verisign...                          
 invalid-..domain.com              invalid       Invalid domain name                               
 ------------------------------------------------------------------------------------------------------
 free: 245  registered: 230  unknown: 15  error: 5  invalid: 5  total: 500
@@ -218,13 +231,17 @@ free: 245  registered: 230  unknown: 15  error: 5  invalid: 5  total: 500
 Output saved: CSV -> results.csv
 ```
 
-**CSV Output (`results.csv`):**
+**CSV Output (`results.csv` - also sorted):**
 
 ```csv
 domain,status,note,dns,http
+afreeme.com,free,whois: whois.verisign-grs.com,,
+bestdomain.net,free,whois: whois.verisign-grs.com,,
+creativeidea.io,free,whois: whois.verisign-grs.com,,
 example.com,registered,whois: whois.verisign-grs.com,A: 93.184.216.34,https 200
-mydomain.com,free,whois: whois.verisign-grs.com,,
-test123.net,free,whois: whois.verisign-grs.com,,
+facebook.net,registered,whois: whois.verisign-grs.com,,
+test123.net,registered,whois: whois.verisign-grs.com,,
+unknown.com,unknown,whois: whois.verisign-grs.com,,
 invalid-..domain.com,invalid,Invalid domain name,,
 ```
 
