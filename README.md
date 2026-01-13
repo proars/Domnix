@@ -22,78 +22,16 @@
 
 Domnix includes two powerful tools:
 
-1.  **Domain Checker** (`domnix.py`) - Check domain availability with fast WHOIS queries
-2.  **Domain Generator** (`bulk_domain_generator.py`) - Generate domain variations using regex patterns
+1. **Domain Checker** (`domnix.py`) - Check domain availability with fast WHOIS queries
+2. **Domain Generator** (`bulk_domain_generator.py`) - Generate domain variations using regex patterns
 
-### 🎯 Perfect for:
+### 🎯 Perfect for
 
-*   🚀 Startup founders searching for the perfect domain
-*   💼 Domain investors performing bulk availability checks
-*   🛡️ Brand managers monitoring domain variations
-*   👨‍💻 Developers building domain-related tools
-*   📈 SEO specialists looking for brandable domains
-
----
-
-## 📦 Tool #1: Bulk Domain Generator
-
-Generate hundreds of domain variations using regex patterns and creative combinations.
-
-### Features
-
-*   **Regex Pattern Support**: Use patterns like `[a-z]example.com` or `[a-z]{2}press.com`
-*   **Character Classes**: Support for `[a-z]`, `[0-9]`, `[a-zA-Z]`, custom sets
-*   **Quantifiers**: `{2}`, `{1,3}`, `?`, `+`, `*` for flexible patterns
-*   **Auto-Variations**: Prefixes, suffixes, numbers, vowel replacements
-*   **Clean Output**: Plain text format ready for domnix.py
-
-### Usage
-
-Run the generator:
-
-```
-python bulk_domain_generator.py
-```
-
-Then enter a pattern:
-
-**Simple keyword:**
-
-```
-tech
-```
-
-Generates: tech.com, mytech.com, techlab.com, tech365.com, etc.
-
-**Regex patterns:**
-
-```
-[a-z]press.com           # apress.com, bpress.com, ..., zpress.com
-[a-z]{2}example.com      # aaexample.com, abexample.com, ..., zzexample.com
-?example.com             # example.com, aexample.com, bexample.com, ...
-[0-9]app.io              # 0app.io, 1app.io, ..., 9app.io
-```
-
-### Pattern Examples
-
-| Pattern | Description | Example Results |
-| --- | --- | --- |
-| `[a-z]press.com` | Single letter prefix | apress.com, bpress.com, zpress.com |
-| `[a-z]{2}tech.com` | Two letter combinations | aatech.com, abtech.com, zztech.com |
-| `[0-9]{3}app.io` | Three digit combinations | 000app.io, 001app.io, 999app.io |
-| `?domain.com` | Optional character | domain.com, adomain.com, bdomain.com |
-| `tech` | Keyword variations | tech.com, mytech.io, techlab.net |
-
-### Output
-
-Generates `domains.txt` with clean domain list:
-
-```
-apress.com
-bpress.com
-cpress.com
-...
-```
+- 🚀 Startup founders searching for the perfect domain
+- 💼 Domain investors performing bulk availability checks
+- 🛡️ Brand managers monitoring domain variations
+- 👨‍💻 Developers building domain-related tools
+- 📈 SEO specialists looking for brandable domains
 
 ---
 
@@ -663,63 +601,3 @@ domain availability checker, bulk WHOIS, domain name generator, regex domain pat
 ---
 
 **Made with ❤️ by [ARS Tech](https://arstech.net)**
-*   Labels cannot start or end with hyphens
-*   Total length must be ≤253 characters
-
-**Rate limiting issues:**
-
-*   Reduce `--workers` count (try 5-10 instead of 50)
-*   Add delays between runs
-*   Use `--whois-server` to specify alternative servers
-
-**Progress bar not showing:**
-
-*   Ensure you're running in a terminal that supports ANSI codes
-*   On Windows, use PowerShell or Windows Terminal (not old CMD)
-
----
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1.  Fork the repository
-2.  Create your feature branch: `git checkout -b feature/amazing-feature`
-3.  Commit your changes: `git commit -m 'Add amazing feature'`
-4.  Push to the branch: `git push origin feature/amazing-feature`
-5.  Open a Pull Request
-
-**Ideas for contributions:**
-
-*   Additional regex pattern support
-*   More domain variation algorithms
-*   Support for additional WHOIS servers
-*   Performance optimizations
-*   Better error handling
-*   Additional output formats (JSON, XML)
-
----
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-*   IANA for providing WHOIS server information
-*   The Python community for inspiration and support
-*   All contributors who help improve this tool
-
----
-
-## 📊 Keywords
-
-Bulk domain availability checker, WHOIS CLI, domain name generator, regex domain patterns, IDN support, multi-threaded WHOIS, DNS resolution, HTTP status check, CSV export, cross-platform, open source domain checker, domain availability tool, domain lookup, fast WHOIS, parallel WHOIS, command-line domain checker, domain hunter, brandable domains, domain variations.
-
----
-
-Made with ❤️ by [ARS Tech](https://arstech.net)
